@@ -10,8 +10,8 @@ include(cmake/ide.cmake)
 
 spdlog_extract_version()
 
-project(spdlog VERSION ${SPDLOG_VERSION} LANGUAGES CXX)
-message(STATUS "Build spdlog: ${SPDLOG_VERSION}")
+project(spdlog_android VERSION ${SPDLOG_VERSION} LANGUAGES CXX)
+message(STATUS "Build spdlog_android: ${SPDLOG_VERSION}")
 
 include(GNUInstallDirs)
 
@@ -163,46 +163,46 @@ if(SPDLOG_BUILD_SHARED OR BUILD_SHARED_LIBS)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
         list(APPEND SPDLOG_SRCS ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
     endif()
-    add_library(spdlog SHARED ${SPDLOG_SRCS} ${SPDLOG_ALL_HEADERS})
-    target_compile_definitions(spdlog PUBLIC SPDLOG_SHARED_LIB)
+    add_library(spdlog_android SHARED ${SPDLOG_SRCS} ${SPDLOG_ALL_HEADERS})
+    target_compile_definitions(spdlog_android PUBLIC SPDLOG_SHARED_LIB)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        target_compile_options(spdlog PUBLIC $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<COMPILE_LANGUAGE:CUDA>>>:/wd4251
+        target_compile_options(spdlog_android PUBLIC $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<NOT:$<COMPILE_LANGUAGE:CUDA>>>:/wd4251
                                              /wd4275>)
     endif()
     if(NOT SPDLOG_USE_STD_FORMAT AND NOT SPDLOG_FMT_EXTERNAL AND NOT SPDLOG_FMT_EXTERNAL_HO)
-        target_compile_definitions(spdlog PRIVATE FMT_LIB_EXPORT PUBLIC FMT_SHARED)
+        target_compile_definitions(spdlog_android PRIVATE FMT_LIB_EXPORT PUBLIC FMT_SHARED)
     endif()
 else()
-    add_library(spdlog STATIC ${SPDLOG_SRCS} ${SPDLOG_ALL_HEADERS})
+    add_library(spdlog_android STATIC ${SPDLOG_SRCS} ${SPDLOG_ALL_HEADERS})
 endif()
 
-add_library(spdlog::spdlog ALIAS spdlog)
+add_library(spdlog::spdlog_android ALIAS spdlog_android)
 
 set(SPDLOG_INCLUDES_LEVEL "")
 if(SPDLOG_SYSTEM_INCLUDES)
     set(SPDLOG_INCLUDES_LEVEL "SYSTEM")
 endif()
 
-target_compile_definitions(spdlog PUBLIC SPDLOG_COMPILED_LIB)
-target_include_directories(spdlog ${SPDLOG_INCLUDES_LEVEL} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
+target_compile_definitions(spdlog_android PUBLIC SPDLOG_COMPILED_LIB)
+target_include_directories(spdlog_android ${SPDLOG_INCLUDES_LEVEL} PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
                                                                   "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
-target_link_libraries(spdlog PUBLIC Threads::Threads)
-spdlog_enable_warnings(spdlog)
+target_link_libraries(spdlog_android PUBLIC Threads::Threads)
+spdlog_enable_warnings(spdlog_android)
 
-set_target_properties(spdlog PROPERTIES VERSION ${SPDLOG_VERSION} SOVERSION
+set_target_properties(spdlog_android PROPERTIES VERSION ${SPDLOG_VERSION} SOVERSION
                                                                   ${SPDLOG_VERSION_MAJOR}.${SPDLOG_VERSION_MINOR})
-set_target_properties(spdlog PROPERTIES DEBUG_POSTFIX d)
+set_target_properties(spdlog_android PROPERTIES DEBUG_POSTFIX d)
 
 if(COMMAND target_precompile_headers AND SPDLOG_ENABLE_PCH)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/pch.h.in ${PROJECT_BINARY_DIR}/spdlog_pch.h @ONLY)
-    target_precompile_headers(spdlog PRIVATE ${PROJECT_BINARY_DIR}/spdlog_pch.h)
+    target_precompile_headers(spdlog_android PRIVATE ${PROJECT_BINARY_DIR}/spdlog_pch.h)
 endif()
 
 # sanitizer support
 if(SPDLOG_SANITIZE_ADDRESS)
-    spdlog_enable_addr_sanitizer(spdlog)
+    spdlog_enable_addr_sanitizer(spdlog_android)
 elseif(SPDLOG_SANITIZE_THREAD)
-    spdlog_enable_thread_sanitizer(spdlog)
+    spdlog_enable_thread_sanitizer(spdlog_android)
 endif()
 
 # ---------------------------------------------------------------------------------------
@@ -223,15 +223,15 @@ if(SPDLOG_FMT_EXTERNAL OR SPDLOG_FMT_EXTERNAL_HO)
     if(NOT TARGET fmt::fmt)
         find_package(fmt CONFIG REQUIRED)
     endif()
-    target_compile_definitions(spdlog PUBLIC SPDLOG_FMT_EXTERNAL)
+    target_compile_definitions(spdlog_android PUBLIC SPDLOG_FMT_EXTERNAL)
     target_compile_definitions(spdlog_header_only INTERFACE SPDLOG_FMT_EXTERNAL)
 
     # use external fmt-header-only
     if(SPDLOG_FMT_EXTERNAL_HO)
-        target_link_libraries(spdlog PUBLIC fmt::fmt-header-only)
+        target_link_libraries(spdlog_android PUBLIC fmt::fmt-header-only)
         target_link_libraries(spdlog_header_only INTERFACE fmt::fmt-header-only)
     else() # use external compile fmt
-        target_link_libraries(spdlog PUBLIC fmt::fmt)
+        target_link_libraries(spdlog_android PUBLIC fmt::fmt)
         target_link_libraries(spdlog_header_only INTERFACE fmt::fmt)
     endif()
 
@@ -249,7 +249,7 @@ if(SPDLOG_FWRITE_UNLOCKED)
         check_symbol_exists(fwrite_unlocked "stdio.h" HAVE_FWRITE_UNLOCKED)
     endif()
     if(HAVE_FWRITE_UNLOCKED)
-        target_compile_definitions(spdlog PRIVATE SPDLOG_FWRITE_UNLOCKED)
+        target_compile_definitions(spdlog_android PRIVATE SPDLOG_FWRITE_UNLOCKED)
         target_compile_definitions(spdlog_header_only INTERFACE SPDLOG_FWRITE_UNLOCKED)
     endif()
 endif()
@@ -258,7 +258,7 @@ endif()
 # Add required libraries for Android CMake build
 # ---------------------------------------------------------------------------------------
 if(ANDROID)
-    target_link_libraries(spdlog PUBLIC log)
+    target_link_libraries(spdlog_android PUBLIC log)
     target_link_libraries(spdlog_header_only INTERFACE log)
 endif()
 
@@ -281,19 +281,19 @@ foreach(
     SPDLOG_DISABLE_DEFAULT_LOGGER
     SPDLOG_USE_STD_FORMAT)
     if(${SPDLOG_OPTION})
-        target_compile_definitions(spdlog PUBLIC ${SPDLOG_OPTION})
+        target_compile_definitions(spdlog_android PUBLIC ${SPDLOG_OPTION})
         target_compile_definitions(spdlog_header_only INTERFACE ${SPDLOG_OPTION})
     endif()
 endforeach()
 
 if(MSVC)
-    target_compile_options(spdlog PRIVATE "/Zc:__cplusplus")
+    target_compile_options(spdlog_android PRIVATE "/Zc:__cplusplus")
     target_compile_options(spdlog_header_only INTERFACE "/Zc:__cplusplus")
     if(SPDLOG_MSVC_UTF8)
         # fmtlib requires the /utf-8 flag when building with msvc. see https://github.com/fmtlib/fmt/pull/4159 on the
         # purpose of the additional
         # "$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>"
-        target_compile_options(spdlog PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
+        target_compile_options(spdlog_android PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
         target_compile_options(spdlog_header_only
                                INTERFACE $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
     endif()
@@ -304,13 +304,13 @@ endif()
 # ---------------------------------------------------------------------------------------
 if(SPDLOG_NO_EXCEPTIONS)
     if(NOT SPDLOG_FMT_EXTERNAL AND NOT SPDLOG_FMT_EXTERNAL_HO)
-        target_compile_definitions(spdlog PUBLIC FMT_USE_EXCEPTIONS=0)
+        target_compile_definitions(spdlog_android PUBLIC FMT_USE_EXCEPTIONS=0)
     endif()
     if(NOT MSVC)
-        target_compile_options(spdlog PRIVATE -fno-exceptions)
+        target_compile_options(spdlog_android PRIVATE -fno-exceptions)
     else()
-        target_compile_options(spdlog PRIVATE /EHs-c-)
-        target_compile_definitions(spdlog PRIVATE _HAS_EXCEPTIONS=0)
+        target_compile_options(spdlog_android PRIVATE /EHs-c-)
+        target_compile_definitions(spdlog_android PRIVATE _HAS_EXCEPTIONS=0)
     endif()
 endif()
 # ---------------------------------------------------------------------------------------
@@ -342,27 +342,27 @@ endif()
 if(SPDLOG_INSTALL)
     message(STATUS "Generating install")
     set(project_config_in "${CMAKE_CURRENT_LIST_DIR}/cmake/spdlogConfig.cmake.in")
-    set(project_config_out "${CMAKE_CURRENT_BINARY_DIR}/spdlogConfig.cmake")
-    set(config_targets_file "spdlogConfigTargets.cmake")
-    set(version_config_file "${CMAKE_CURRENT_BINARY_DIR}/spdlogConfigVersion.cmake")
-    set(export_dest_dir "${CMAKE_INSTALL_LIBDIR}/cmake/spdlog")
+    set(project_config_out "${CMAKE_CURRENT_BINARY_DIR}/spdlog_androidConfig.cmake")
+    set(config_targets_file "spdlog_androidConfigTargets.cmake")
+    set(version_config_file "${CMAKE_CURRENT_BINARY_DIR}/spdlog_androidConfigVersion.cmake")
+    set(export_dest_dir "${CMAKE_INSTALL_LIBDIR}/cmake/spdlog_android")
     set(pkgconfig_install_dir "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
     set(pkg_config "${CMAKE_BINARY_DIR}/${PROJECT_NAME}.pc")
 
     # ---------------------------------------------------------------------------------------
     # Include files
     # ---------------------------------------------------------------------------------------
-    install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" PATTERN "fmt/bundled" EXCLUDE)
+    install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_PREFIX}/include/spdlog" PATTERN "fmt/bundled" EXCLUDE)
     install(
-        TARGETS spdlog spdlog_header_only
-        EXPORT spdlog
+        TARGETS spdlog_android spdlog_header_only
+        EXPORT spdlog_android
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     if(NOT SPDLOG_USE_STD_FORMAT AND NOT SPDLOG_FMT_EXTERNAL AND NOT SPDLOG_FMT_EXTERNAL_HO)
-        install(DIRECTORY include/${PROJECT_NAME}/fmt/bundled/
-                DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}/fmt/bundled/")
+        install(DIRECTORY include/spdlog/fmt/bundled/
+                DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/spdlog/fmt/bundled/")
     endif()
 
     # ---------------------------------------------------------------------------------------
@@ -378,18 +378,18 @@ if(SPDLOG_INSTALL)
     else()
         set(PKG_CONFIG_LIBDIR "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
     endif()
-    get_target_property(PKG_CONFIG_DEFINES spdlog INTERFACE_COMPILE_DEFINITIONS)
+    get_target_property(PKG_CONFIG_DEFINES spdlog_android INTERFACE_COMPILE_DEFINITIONS)
     string(REPLACE ";" " -D" PKG_CONFIG_DEFINES "${PKG_CONFIG_DEFINES}")
     string(CONCAT PKG_CONFIG_DEFINES "-D" "${PKG_CONFIG_DEFINES}")
-    configure_file("cmake/${PROJECT_NAME}.pc.in" "${pkg_config}" @ONLY)
+    configure_file("cmake/spdlog.pc.in" "${pkg_config}" @ONLY)
     install(FILES "${pkg_config}" DESTINATION "${pkgconfig_install_dir}")
 
     # ---------------------------------------------------------------------------------------
     # Install CMake config files
     # ---------------------------------------------------------------------------------------
-    export(TARGETS spdlog spdlog_header_only NAMESPACE spdlog::
+    export(TARGETS spdlog_android spdlog_header_only NAMESPACE spdlog::
            FILE "${CMAKE_CURRENT_BINARY_DIR}/${config_targets_file}")
-    install(EXPORT spdlog DESTINATION ${export_dest_dir} NAMESPACE spdlog:: FILE ${config_targets_file})
+    install(EXPORT spdlog_android DESTINATION ${export_dest_dir} NAMESPACE spdlog:: FILE ${config_targets_file})
 
     include(CMakePackageConfigHelpers)
     configure_package_config_file("${project_config_in}" "${project_config_out}" INSTALL_DESTINATION ${export_dest_dir})

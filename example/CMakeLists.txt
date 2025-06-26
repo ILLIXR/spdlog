@@ -3,16 +3,16 @@
 cmake_minimum_required(VERSION 3.11)
 project(spdlog_examples CXX)
 
-if(NOT TARGET spdlog)
+if(NOT TARGET spdlog_android)
     # Stand-alone build
-    find_package(spdlog REQUIRED)
+    find_package(spdlog_android REQUIRED)
 endif()
 
 # ---------------------------------------------------------------------------------------
 # Example of using pre-compiled library
 # ---------------------------------------------------------------------------------------
 add_executable(example example.cpp)
-target_link_libraries(example PRIVATE spdlog::spdlog $<$<BOOL:${MINGW}>:ws2_32>)
+target_link_libraries(example PRIVATE spdlog::spdlog_android $<$<BOOL:${MINGW}>:ws2_32>)
 
 # ---------------------------------------------------------------------------------------
 # Example of using header-only library
